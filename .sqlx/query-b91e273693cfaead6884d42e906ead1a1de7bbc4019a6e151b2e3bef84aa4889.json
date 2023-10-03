@@ -1,0 +1,16 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "DELETE FROM casbin_rule WHERE\n                    ptype = $1 AND\n                    (v4 is NULL OR v4 = $2) AND\n                    (v5 is NULL OR v5 = $3)",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Text",
+        "Text",
+        "Text"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "b91e273693cfaead6884d42e906ead1a1de7bbc4019a6e151b2e3bef84aa4889"
+}
