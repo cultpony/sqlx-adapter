@@ -10,15 +10,13 @@ Sqlx Adapter is the [Sqlx](https://github.com/launchbadge/sqlx) adapter for [Cas
 
 Based on [Sqlx](https://github.com/launchbadge/sqlx), The current supported databases are:
 
-- [Mysql](https://www.mysql.com/)
 - [Postgres](https://github.com/lib/pq)
-- [SQLite](https://www.sqlite.org)
 
 ## Notice
 In order to unify the database table name in Casbin ecosystem, we decide to use `casbin_rule` instead of `casbin_rules` from version `0.4.0`. If you are using old version `sqlx-adapter` in your production environment, please use following command and update `sqlx-adapter` version:
 
 ````SQL
-# MySQL & PostgreSQL & SQLite
+# PostgreSQL 
 ALTER TABLE casbin_rules RENAME TO casbin_rule;
 ````
 
@@ -51,20 +49,15 @@ tokio = { version = "1.1.1", features = ["macros"] }
     if [ $DIS == "Ubuntu" ] || [ $DIS == "LinuxMint" ]; then
         sudo apt install -y \
             libpq-dev \
-            libmysqlclient-dev \
-            postgresql-client \
-            mysql-client-core;
+            postgresql-client;
 
     elif [ $DIS == "Deepin" ]; then
         sudo apt install -y \
             libpq-dev \
-            libmysql++-dev \
-            mysql-client \
             postgresql-client;
     elif [ $DIS == "ArchLinux" ] || [ $DIS == "ManjaroLinux" ]; then
         sudo pacman -S libmysqlclient \
-            postgresql-libs \
-            mysql-clients \;
+            postgresql-libs;
     else
         echo "Unsupported system: $DIS" && exit 1;
     fi
@@ -77,18 +70,6 @@ tokio = { version = "1.1.1", features = ["macros"] }
         -p 5432:5432 \
         -v /srv/docker/postgresql:/var/lib/postgresql \
         postgres:11;
-
-    docker run -itd \
-        --restart always \
-        -e MYSQL_ALLOW_EMPTY_PASSWORD=yes \
-        -e MYSQL_USER=casbin_rs \
-        -e MYSQL_PASSWORD=casbin_rs \
-        -e MYSQL_DATABASE=casbin \
-        -p 3306:3306 \
-        -v /srv/docker/mysql:/var/lib/mysql \
-        mysql:8 \
-        --default-authentication-plugin=mysql_native_password;
-
     ```
 
 2. Create table `casbin_rule`
@@ -106,37 +87,6 @@ tokio = { version = "1.1.1", features = ["macros"] }
         v5 VARCHAR NOT NULL,
         CONSTRAINT unique_key_sqlx_adapter UNIQUE(ptype, v0, v1, v2, v3, v4, v5)
         );"
-
-    # MySQL
-    mysql -h 127.0.0.1 -u casbin_rs -pcasbin_rs casbin 
-
-    CREATE TABLE IF NOT EXISTS casbin_rule (
-        id INT NOT NULL AUTO_INCREMENT,
-        ptype VARCHAR(12) NOT NULL,
-        v0 VARCHAR(128) NOT NULL,
-        v1 VARCHAR(128) NOT NULL,
-        v2 VARCHAR(128) NOT NULL,
-        v3 VARCHAR(128) NOT NULL,
-        v4 VARCHAR(128) NOT NULL,
-        v5 VARCHAR(128) NOT NULL,
-        PRIMARY KEY(id),
-        CONSTRAINT unique_key_sqlx_adapter UNIQUE(ptype, v0, v1, v2, v3, v4, v5)
-        ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-   
-   # SQLite
-   touch casbin.db
-   
-   sqlite3 casbin.db -cmd "CREATE TABLE IF NOT EXISTS casbin_rule (
-       id INTEGER PRIMARY KEY,
-       ptype VARCHAR(12) NOT NULL,
-       v0 VARCHAR(128) NOT NULL,
-       v1 VARCHAR(128) NOT NULL,
-       v2 VARCHAR(128) NOT NULL,
-       v3 VARCHAR(128) NOT NULL,
-       v4 VARCHAR(128) NOT NULL,
-       v5 VARCHAR(128) NOT NULL,
-       CONSTRAINT unique_key_diesel_adapter UNIQUE(ptype, v0, v1, v2, v3, v4, v5)
-       );"
     ```
 
 3. Configure `env`
@@ -145,8 +95,6 @@ tokio = { version = "1.1.1", features = ["macros"] }
 
     ```bash
     DATABASE_URL=postgres://casbin_rs:casbin_rs@localhost:5432/casbin
-    # DATABASE_URL=mysql://casbin_rs:casbin_rs@localhost:3306/casbin
-    # DATABASE_URL=sqlite:casbin.db
     POOL_SIZE=8
     ```
 
@@ -180,7 +128,3 @@ async fn main() -> Result<()> {
 ## Features
 
 - `postgres`
-- `mysql`
-- `sqlite`
-
-*Attention*: `postgres`, `mysql`, `sqlite` are mutual exclusive which means that you can only activate one of them.
